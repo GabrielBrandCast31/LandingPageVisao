@@ -1,0 +1,28 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# SQLite databases (local)
+*.db
+*.db-journal
+*.sqlite3
+
+# Outbox de e-mails em modo console
+outbox/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store

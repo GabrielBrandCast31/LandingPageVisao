@@ -41,22 +41,41 @@ O projeto entrega:
 
 ## Stack técnica
 
+Monorepo simples com dois pacotes independentes — **frontend** (Next.js) e **backend** (FastAPI) — comunicando-se via HTTP/JSON.
+
+### Backend ([backend/](backend/))
+
 | Camada | Tecnologia | Motivo |
 | --- | --- | --- |
-| Framework | **Next.js 14** (App Router) | SSR + rotas de API no mesmo projeto, Core Web Vitals fortes, deploy 1-clique na Vercel |
-| Linguagem | **TypeScript** | Tipagem do schema do quiz/perfis evita bugs caros em prod |
-| Estilização | **Tailwind CSS** + design tokens | Velocidade de prototipação + consistência com a paleta da marca |
-| Componentes | **shadcn/ui** | Componentes acessíveis (Radix) com código-fonte no projeto (sem lock-in) |
-| Animação | **Framer Motion** | Micro-interações na hero, pilares e transições do quiz |
-| Formulários | **React Hook Form** + **Zod** | Validação tipada das respostas do quiz e do lead capture |
-| Geração de PDF | **@react-pdf/renderer** | PDF gerado server-side com React; um template por perfil |
-| E-mail transacional | **Resend** + **React Email** | DX moderna, templates em React, anexar PDF nativo |
-| Banco + Storage | **Supabase** (Postgres + Storage) | CRM de leads, armazenamento dos PDFs, RLS pronto para LGPD |
-| Agendamento | **Google Calendar** (link de agendamento do Felipe) | Sem custo, sem dependência extra |
-| Analytics | **Meta Pixel** + **Google Tag Manager** | Stack já usada pela Brandcast em campanhas |
-| Hospedagem | **Vercel** | Edge CDN + preview deploys por PR |
+| Framework | **FastAPI** 0.115 + **Uvicorn** | Async nativo, OpenAPI automático, ótimo DX |
+| ORM | **SQLAlchemy 2.0** (async) | Mesma codebase roda em SQLite e Postgres |
+| Driver DB local | **aiosqlite** | Zero setup para dev |
+| Driver DB prod | **asyncpg** | Conexão nativa com Postgres do Supabase |
+| Validação | **Pydantic v2** | Tipagem dos payloads do quiz |
+| Linguagem | **Python 3.11+** | |
 
-> **Observação:** se a Visão preferir uma stack mais leve (Astro + Cloudflare Pages), ou se o CRM definitivo for outro (HubSpot, Airtable, RD Station), a arquitetura está modular — todos os adapters externos ficam isolados em [src/lib/integrations/](src/lib/integrations/).
+### Frontend ([frontend/](frontend/))
+
+| Camada | Tecnologia | Motivo |
+| --- | --- | --- |
+| Framework | **Next.js 14** (App Router) + **TypeScript** | SSR, deploy 1-clique na Vercel |
+| Estilização | **Tailwind CSS** + design tokens | Paleta da marca como classes utilitárias |
+| Fontes | Poppins + Inter + Nunito (Google Fonts) | Brittany (paga) entra em Sprint 1 |
+| Componentes | **shadcn/ui** (Sprint 1) | Radix headless + código no projeto |
+| Animação | **Framer Motion** (Sprint 1) | Micro-interações |
+| Formulários | **React Hook Form** + **Zod** (Sprint 3) | Validação tipada |
+| Geração de PDF | **@react-pdf/renderer** (Sprint 4) | Server-side |
+
+### Infra & serviços externos
+
+| Serviço | Quando entra |
+| --- | --- |
+| **SQLite** | Sprint 0 (local) |
+| **Supabase** (Postgres + Storage) | Sprint 3+ (produção) |
+| **Resend** (e-mail transacional) | Sprint 4 |
+| **Google Calendar** (agendamento) | Sprint 5 |
+| **Meta Pixel** + **GTM** | Sprint 5 |
+| **Vercel** (frontend) + **Railway/Fly.io** (backend) | Sprint 8 |
 
 ---
 
@@ -64,87 +83,112 @@ O projeto entrega:
 
 ```
 ProjetoVisao/
-├── FEATURES.js                 # Especificação técnica (fonte da verdade do conteúdo)
-├── README.md                   # Este arquivo
-├── public/
-│   ├── fonts/                  # Poppins, Inter, Nunito, Brittany
-│   └── images/                 # Fotos dos sócios, ilustrações dos pilares
-├── src/
+├── FEATURES.js                    # Especificação técnica (fonte da verdade do conteúdo)
+├── README.md                      # Este arquivo
+│
+├── backend/                       # FastAPI
 │   ├── app/
-│   │   ├── page.tsx            # Landing page (rotas mobile-first e desktop)
-│   │   ├── quiz/page.tsx       # Quiz fullscreen
-│   │   ├── obrigado/page.tsx   # Tela pós-envio
-│   │   ├── politica-privacidade/page.tsx
-│   │   └── api/
-│   │       ├── quiz/route.ts        # Recebe respostas, classifica perfil, dispara PDF
-│   │       ├── pdf/[profile]/route.ts # Gera PDF dinâmico
-│   │       ├── lead/route.ts        # Persiste lead no Supabase
-│   │       └── email/route.ts       # Envia diagnóstico via Resend
-│   ├── components/
-│   │   ├── sections/           # Hero, Pillars, Founders, FAQ, etc.
-│   │   ├── quiz/               # QuestionCard, ProgressBar, LeadCapture
-│   │   ├── pdf/                # Templates do PDF por perfil
-│   │   └── ui/                 # shadcn/ui customizado
-│   ├── lib/
-│   │   ├── quiz/
-│   │   │   ├── scoring.ts      # Heurística de classificação por perfil
-│   │   │   └── profiles.ts     # Definição dos 4 perfis
-│   │   ├── integrations/
-│   │   │   ├── supabase.ts
-│   │   │   ├── resend.ts
-│   │   │   ├── calendar.ts
-│   │   │   └── analytics.ts
-│   │   └── content.ts          # Importa de FEATURES.js
-│   └── styles/
-│       └── tokens.css          # Cores, tipografia, espaçamento
-├── supabase/
-│   └── migrations/             # Schema do CRM (leads, respostas, perfis)
-└── package.json
+│   │   ├── main.py                # FastAPI app + CORS + lifespan
+│   │   ├── config.py              # Settings (env vars)
+│   │   ├── database.py            # Engine async + get_db
+│   │   ├── models/
+│   │   │   └── lead.py            # SQLAlchemy
+│   │   ├── schemas/
+│   │   │   └── lead.py            # Pydantic
+│   │   └── routers/
+│   │       ├── health.py          # GET /api/health
+│   │       └── leads.py           # POST/GET /api/leads
+│   ├── requirements.txt
+│   ├── .env.example
+│   └── README.md
+│
+└── frontend/                      # Next.js
+    ├── src/
+    │   ├── app/
+    │   │   ├── layout.tsx         # Fonts + metadata
+    │   │   ├── page.tsx           # Landing page (Sprint 0: hero + pilares)
+    │   │   └── globals.css        # Tailwind + tokens
+    │   ├── components/
+    │   │   └── HealthBadge.tsx    # Conexão com a API
+    │   └── lib/
+    │       └── api.ts             # Cliente HTTP
+    ├── tailwind.config.ts         # Paleta da marca
+    ├── package.json
+    ├── .env.example
+    └── README.md
 ```
 
 ---
 
 ## Como rodar localmente
 
+Você precisa de **dois terminais** — um para o backend e outro para o frontend.
+
+### Pré-requisitos
+
+- Python **3.11+**
+- Node.js **20+**
+- npm 10+
+
+### 1. Backend (FastAPI + SQLite)
+
 ```bash
-# 1. Instalar dependências
-pnpm install
+cd backend
 
-# 2. Copiar variáveis de ambiente
-cp .env.example .env.local
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 
-# 3. Subir o ambiente
-pnpm dev
+cp .env.example .env
+uvicorn app.main:app --reload
 ```
 
-A aplicação ficará disponível em [http://localhost:3000](http://localhost:3000).
+API disponível em [http://localhost:8000](http://localhost:8000) e docs em [http://localhost:8000/docs](http://localhost:8000/docs).
 
-> **Pré-requisitos:** Node.js 20+, pnpm 9+, conta na Supabase (free tier), conta na Resend, link de agendamento Google Calendar do Felipe.
+### 2. Frontend (Next.js)
+
+```bash
+cd frontend
+
+npm install
+cp .env.example .env.local
+
+npm run dev
+```
+
+Frontend disponível em [http://localhost:3000](http://localhost:3000). A hero mostra um *badge* indicando o status da API.
+
+### Quando migrar para Supabase
+
+Basta editar `backend/.env`:
+
+```env
+# Comente o SQLite e descomente o Postgres
+DATABASE_URL=postgresql+asyncpg://postgres.[ref]:[senha]@aws-0-sa-east-1.pooler.supabase.com:5432/postgres
+```
+
+Nenhuma mudança no código — o SQLAlchemy abstrai os dois drivers.
 
 ---
 
 ## Variáveis de ambiente
 
+### Backend ([backend/.env](backend/.env.example))
+
 ```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-
-# Resend (e-mail transacional)
-RESEND_API_KEY=
-RESEND_FROM_EMAIL=contato@visaobr.com.br
-
-# Google Calendar (link público de agendamento)
-NEXT_PUBLIC_CALENDAR_BOOKING_URL=
-
-# WhatsApp
-NEXT_PUBLIC_WHATSAPP_NUMBER=5521997079059
-
-# Analytics
-NEXT_PUBLIC_META_PIXEL_ID=
-NEXT_PUBLIC_GTM_ID=
+APP_NAME=Visão API
+ENVIRONMENT=development
+DATABASE_URL=sqlite+aiosqlite:///./visao.db
+CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 ```
+
+### Frontend ([frontend/.env.local](frontend/.env.example))
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+Em sprints futuras serão adicionadas: `RESEND_API_KEY`, `NEXT_PUBLIC_META_PIXEL_ID`, `NEXT_PUBLIC_GTM_ID`, `NEXT_PUBLIC_CALENDAR_BOOKING_URL`, `NEXT_PUBLIC_WHATSAPP_NUMBER`.
 
 ---
 
@@ -152,19 +196,20 @@ NEXT_PUBLIC_GTM_ID=
 
 O projeto está organizado em **8 sprints** com entregáveis claros. Estimativa total: **9 a 13 semanas**.
 
-### Sprint 0 — Fundação técnica · *3-5 dias*
+### Sprint 0 — Fundação técnica · *3-5 dias* ✅
 
 **Objetivo:** ambiente pronto para começar a construir.
 
-- [ ] Inicializar Next.js 14 (App Router) com TypeScript
-- [ ] Configurar Tailwind + design tokens (cores, tipografia da marca)
-- [ ] Adicionar fontes (Poppins, Inter, Nunito, Brittany)
-- [ ] Setup ESLint + Prettier + Husky (pre-commit)
-- [ ] Setup do repositório no GitHub + CI básica (lint + typecheck)
-- [ ] Setup do projeto na Vercel com preview deploys
-- [ ] Provisionar projeto Supabase e schema inicial (`leads`, `quiz_responses`)
+- [x] Backend FastAPI com SQLAlchemy async (SQLite local / Postgres-Supabase prod)
+- [x] Modelo `Lead` + schema Pydantic + rotas `GET /api/health` e `POST/GET /api/leads`
+- [x] Frontend Next.js 14 (App Router) + TypeScript
+- [x] Tailwind + tokens de marca (cores e fontes Poppins/Inter/Nunito)
+- [x] Hero provisória + badge de status da API
+- [x] CORS configurado para permitir o frontend chamar a API
+- [ ] Setup do repositório no GitHub + CI básica *(pendente, depende do usuário)*
+- [ ] Provisionar projeto Supabase real *(pendente)*
 
-**Entregáveis:** repositório com `pnpm dev` funcionando, primeiro deploy de preview, banco vazio criado.
+**Entregáveis:** `uvicorn app.main:app --reload` + `npm run dev` rodando localmente com hero exibindo o status da API.
 
 ---
 
