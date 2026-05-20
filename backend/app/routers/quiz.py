@@ -13,6 +13,7 @@ from ..services.email import send_diagnosis_email
 from ..services.pdf import render_diagnosis_pdf
 from ..services.profiles import get_profile
 from ..services.scoring import classify
+from ..services.sheets import send_lead_to_sheets
 
 router = APIRouter(prefix="/quiz", tags=["quiz"])
 
@@ -38,6 +39,7 @@ async def submit_quiz(
     # Gera PDF e dispara e-mail em background — não bloqueia a resposta da API
     pdf_bytes = await asyncio.to_thread(render_diagnosis_pdf, lead)
     background.add_task(send_diagnosis_email, lead, pdf_bytes)
+    background.add_task(send_lead_to_sheets, lead)
 
     return QuizResult(
         lead_id=lead.id,

@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     WHATSAPP_NUMBER: str = "5521997079059"
     PUBLIC_SITE_URL: str = "http://localhost:3000"
 
+    # Webhook do Google Apps Script publicado a partir da planilha de controle.
+    # Vazio = integração desativada (não quebra o funil).
+    GOOGLE_SHEETS_WEBHOOK_URL: str = ""
+
     @property
     def cors_origins(self) -> list[str]:
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
