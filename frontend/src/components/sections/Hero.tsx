@@ -1,7 +1,6 @@
 import { LinkButton } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Orbital, Arc } from "@/components/ui/Orbital";
-import { HealthBadge } from "@/components/HealthBadge";
 import { HERO } from "@/lib/content";
 
 export function Hero() {
@@ -23,9 +22,7 @@ export function Hero() {
       />
 
       <Container className="relative flex flex-col items-center text-center">
-        <HealthBadge />
-
-        <p className="mt-8 font-heading text-xs uppercase tracking-[0.32em] text-primary-200">
+        <p className="mt-4 font-heading text-xs uppercase tracking-[0.32em] text-primary-200">
           {HERO.eyebrow}
         </p>
 

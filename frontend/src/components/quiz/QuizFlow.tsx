@@ -8,11 +8,22 @@ import { QuestionStep } from "./QuestionStep";
 import { LeadCaptureStep, type LeadFormParsed } from "./LeadCaptureStep";
 import { Button } from "@/components/ui/Button";
 import { QUIZ_QUESTIONS, TOTAL_STEPS } from "@/lib/quiz-data";
-import { submitQuiz } from "@/lib/api";
+import { classify } from "@/lib/scoring";
+import { getProfile } from "@/lib/profiles";
+import { diagnosisPdfBase64 } from "@/lib/pdf";
+import {
+  BOOKING_URL,
+  sendLeadWebhook,
+  whatsappLink,
+  type LeadInput,
+} from "@/lib/submit";
+import type { QuizResult } from "@/lib/api";
+
+const RESULT_KEY = "visao:lastResult";
 
 export function QuizFlow() {
   const router = useRouter();
-  const [stepIdx, setStepIdx] = useState(0); // 0..QUIZ_QUESTIONS.length
+  const [stepIdx, setStepIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,30 +45,61 @@ export function QuizFlow() {
   async function handleLeadSubmit(data: LeadFormParsed) {
     setSubmitting(true);
     setError(null);
+
     try {
-      const result = await submitQuiz({
-        answers,
-        lead: {
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
-          age: data.age,
-          gender: data.gender,
-          city: data.city,
-          lgpd_consent: true,
-          source: typeof document !== "undefined" ? document.referrer || "direct" : "direct",
-        },
+      const lead: LeadInput = {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        age: data.age,
+        gender: data.gender,
+        city: data.city,
+        lgpd_consent: true,
+        source:
+          typeof document !== "undefined"
+            ? document.referrer || "direct"
+            : "direct",
+      };
+
+      const profileId = classify(answers);
+      const profile = getProfile(profileId);
+
+      const pdfBase64 = await diagnosisPdfBase64({
+        name: lead.name,
+        profile,
+        bookingUrl: BOOKING_URL,
       });
 
+      // Fire-and-forget para o webhook do Apps Script (planilha + e-mail)
+      void sendLeadWebhook({
+        lead,
+        answers,
+        profile,
+        pdf_base64: pdfBase64,
+        pdf_filename: `diagnostico-visao-${profile.id}.pdf`,
+        booking_url: BOOKING_URL,
+        generated_at: new Date().toISOString(),
+      });
+
+      const result: QuizResult = {
+        profile,
+        lead,
+        answers,
+        booking_url: BOOKING_URL,
+        whatsapp_url: whatsappLink,
+        generated_at: new Date().toISOString(),
+      };
+
       if (typeof window !== "undefined") {
-        sessionStorage.setItem("visao:lastResult", JSON.stringify(result));
+        sessionStorage.setItem(RESULT_KEY, JSON.stringify(result));
       }
-      router.push(`/obrigado?lead=${result.lead_id}&profile=${result.profile.id}`);
+
+      router.push(`/obrigado?profile=${profile.id}`);
     } catch (e) {
       setError(
         e instanceof Error
           ? e.message
-          : "Tivemos um problema ao enviar — tenta de novo daqui a pouco.",
+          : "Tivemos um problema ao gerar seu diagnóstico — tenta de novo daqui a pouco.",
       );
       setSubmitting(false);
     }

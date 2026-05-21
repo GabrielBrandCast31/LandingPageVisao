@@ -1,22 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { LinkButton } from "@/components/ui/Button";
+import { Button, LinkButton } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/ui/Logo";
 import { Orbital } from "@/components/ui/Orbital";
-import { pdfUrl, type QuizResult } from "@/lib/api";
+import { downloadDiagnosisPdf } from "@/lib/pdf";
+import type { QuizResult } from "@/lib/api";
+
+const RESULT_KEY = "visao:lastResult";
 
 export function ThankYouContent() {
-  const params = useSearchParams();
-  const leadId = params.get("lead");
   const [result, setResult] = useState<QuizResult | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const raw = sessionStorage.getItem("visao:lastResult");
+    const raw = sessionStorage.getItem(RESULT_KEY);
     if (raw) {
       try {
         setResult(JSON.parse(raw) as QuizResult);
@@ -28,6 +28,15 @@ export function ThankYouContent() {
 
   const profile = result?.profile;
   const accent = profile?.accent_color ?? "#8350F2";
+
+  function handleDownload() {
+    if (!result) return;
+    downloadDiagnosisPdf({
+      name: result.lead.name,
+      profile: result.profile,
+      bookingUrl: result.booking_url,
+    });
+  }
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-canvas">
@@ -63,7 +72,7 @@ export function ThankYouContent() {
               {profile?.name ?? "Seu diagnóstico"}
             </h1>
             <p className="mt-4 font-body text-lg text-white/90">
-              {profile?.summary ?? "Acabamos de enviar o seu diagnóstico no e-mail."}
+              {profile?.summary ?? "Acabamos de gerar o seu diagnóstico."}
             </p>
           </div>
 
@@ -118,16 +127,15 @@ export function ThankYouContent() {
                 Agendar reunião gratuita
               </LinkButton>
             )}
-            {leadId && (
-              <LinkButton
-                href={pdfUrl(leadId)}
+            {result && (
+              <Button
+                type="button"
                 variant="outline"
                 size="lg"
-                target="_blank"
-                rel="noopener noreferrer"
+                onClick={handleDownload}
               >
                 Baixar diagnóstico (PDF)
-              </LinkButton>
+              </Button>
             )}
             {result?.whatsapp_url && (
               <a
