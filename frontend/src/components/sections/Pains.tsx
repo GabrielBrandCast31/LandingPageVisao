@@ -1,6 +1,7 @@
 import { Section, SectionEyebrow, SectionHeading } from "@/components/ui/Section";
 import { Reveal } from "@/components/ui/Reveal";
 import { Orbital } from "@/components/ui/Orbital";
+import { LinkButton } from "@/components/ui/Button";
 import { PAINS } from "@/lib/content";
 
 export function Pains() {
@@ -34,6 +35,17 @@ export function Pains() {
           </Reveal>
         ))}
       </div>
+
+      <Reveal>
+        <div className="relative mt-12 flex flex-wrap items-center gap-4">
+          <LinkButton href="/quiz" variant="accent" size="md">
+            Quero sair desse roteiro
+          </LinkButton>
+          <span className="font-human text-sm text-dim">
+            Diagnóstico gratuito em 5 perguntas.
+          </span>
+        </div>
+      </Reveal>
     </Section>
   );
 }

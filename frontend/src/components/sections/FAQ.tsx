@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Section, SectionEyebrow, SectionHeading } from "@/components/ui/Section";
+import { LinkButton } from "@/components/ui/Button";
+import { Reveal } from "@/components/ui/Reveal";
 import { FAQ as FAQ_ITEMS } from "@/lib/content";
 
 export function FAQ() {
@@ -63,6 +65,17 @@ export function FAQ() {
           );
         })}
       </div>
+
+      <Reveal>
+        <div className="mt-12 flex flex-wrap items-center gap-4">
+          <LinkButton href="/quiz" variant="primary" size="md">
+            Pronto, quero meu diagnóstico
+          </LinkButton>
+          <span className="font-human text-sm text-ink/65">
+            Sem cadastro pra começar. Resultado direto no e-mail.
+          </span>
+        </div>
+      </Reveal>
     </Section>
   );
 }

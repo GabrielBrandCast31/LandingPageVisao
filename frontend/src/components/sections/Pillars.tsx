@@ -1,5 +1,6 @@
 import { Section, SectionEyebrow, SectionHeading } from "@/components/ui/Section";
 import { Reveal } from "@/components/ui/Reveal";
+import { LinkButton } from "@/components/ui/Button";
 import { PILLARS } from "@/lib/content";
 import { cn } from "@/lib/cn";
 
@@ -146,6 +147,17 @@ export function Pillars() {
           );
         })}
       </div>
+
+      <Reveal>
+        <div className="mt-14 flex flex-wrap items-center gap-4">
+          <LinkButton href="/quiz" variant="primary" size="md">
+            Quero esse alívio mental
+          </LinkButton>
+          <span className="font-human text-sm text-ink/65">
+            Começa pelo diagnóstico — sem custo, sem cadastro.
+          </span>
+        </div>
+      </Reveal>
     </Section>
   );
 }

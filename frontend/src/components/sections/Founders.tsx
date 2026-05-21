@@ -1,5 +1,6 @@
 import { Section, SectionEyebrow, SectionHeading } from "@/components/ui/Section";
 import { Reveal } from "@/components/ui/Reveal";
+import { LinkButton } from "@/components/ui/Button";
 import { FOUNDERS } from "@/lib/content";
 import { cn } from "@/lib/cn";
 
@@ -43,6 +44,17 @@ export function Founders() {
           </Reveal>
         ))}
       </div>
+
+      <Reveal>
+        <div className="mt-12 flex flex-wrap items-center gap-4">
+          <LinkButton href="/quiz" variant="accent" size="md">
+            Falar com a Visão
+          </LinkButton>
+          <span className="font-human text-sm text-dim">
+            Primeira conversa é gratuita e 100% online.
+          </span>
+        </div>
+      </Reveal>
     </Section>
   );
 }

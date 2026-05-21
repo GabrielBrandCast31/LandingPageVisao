@@ -1,5 +1,6 @@
 import { Section, SectionEyebrow, SectionHeading } from "@/components/ui/Section";
 import { Reveal } from "@/components/ui/Reveal";
+import { LinkButton } from "@/components/ui/Button";
 import { CASES } from "@/lib/content";
 
 export function SocialProof() {
@@ -50,6 +51,17 @@ export function SocialProof() {
         Os nomes dos clientes são preservados por LGPD. Casos reais, autorizações
         em coleta.
       </p>
+
+      <Reveal>
+        <div className="mt-10 flex flex-wrap items-center gap-4">
+          <LinkButton href="/quiz" variant="primary" size="md">
+            Quero meu resultado também
+          </LinkButton>
+          <span className="font-human text-sm text-ink/65">
+            Descubra seu perfil em menos de 2 minutos.
+          </span>
+        </div>
+      </Reveal>
     </Section>
   );
 }
