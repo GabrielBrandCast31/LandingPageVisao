@@ -2,11 +2,12 @@
  * Envio do lead — fire-and-forget para o webhook do Google Apps Script.
  *
  * O Apps Script (script publicado a partir da planilha de controle) recebe:
+ *   - lead_id (UUID gerado client-side)
  *   - dados do lead + respostas do quiz + perfil classificado
  *   - PDF em base64
  *
  * E faz, do lado do Google:
- *   1. appendRow na planilha
+ *   1. appendRow na planilha (formato fixo, ordem A→O)
  *   2. sendEmail (GmailApp) com PDF em anexo
  *
  * O frontend não espera resposta (modo `no-cors`) — confiamos no
@@ -39,6 +40,7 @@ export type LeadInput = {
 };
 
 export type WebhookPayload = {
+  lead_id: string;
   lead: LeadInput;
   answers: Record<string, string>;
   profile: Profile;
@@ -47,6 +49,19 @@ export type WebhookPayload = {
   booking_url: string;
   generated_at: string;
 };
+
+/** UUID v4 — usa crypto.randomUUID quando disponível, com fallback estável. */
+export function newLeadId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  // Fallback: 36 chars com hifens nas posições padrão.
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
 
 /**
  * Dispara o webhook do Apps Script.

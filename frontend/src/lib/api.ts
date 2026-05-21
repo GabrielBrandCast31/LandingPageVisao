@@ -11,6 +11,7 @@
 import type { Profile } from "./profiles";
 
 export type QuizResult = {
+  lead_id: string;
   profile: Profile;
   lead: {
     name: string;

@@ -13,6 +13,7 @@ import { getProfile } from "@/lib/profiles";
 import { diagnosisPdfBase64 } from "@/lib/pdf";
 import {
   BOOKING_URL,
+  newLeadId,
   sendLeadWebhook,
   whatsappLink,
   type LeadInput,
@@ -63,6 +64,8 @@ export function QuizFlow() {
 
       const profileId = classify(answers);
       const profile = getProfile(profileId);
+      const lead_id = newLeadId();
+      const generated_at = new Date().toISOString();
 
       const pdfBase64 = await diagnosisPdfBase64({
         name: lead.name,
@@ -72,22 +75,24 @@ export function QuizFlow() {
 
       // Fire-and-forget para o webhook do Apps Script (planilha + e-mail)
       void sendLeadWebhook({
+        lead_id,
         lead,
         answers,
         profile,
         pdf_base64: pdfBase64,
         pdf_filename: `diagnostico-visao-${profile.id}.pdf`,
         booking_url: BOOKING_URL,
-        generated_at: new Date().toISOString(),
+        generated_at,
       });
 
       const result: QuizResult = {
+        lead_id,
         profile,
         lead,
         answers,
         booking_url: BOOKING_URL,
         whatsapp_url: whatsappLink,
-        generated_at: new Date().toISOString(),
+        generated_at,
       };
 
       if (typeof window !== "undefined") {
