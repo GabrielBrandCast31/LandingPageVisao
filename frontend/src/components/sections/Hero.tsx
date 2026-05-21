@@ -27,9 +27,8 @@ export function Hero() {
         </p>
 
         <h1 className="mt-5 max-w-3xl font-heading text-5xl font-extrabold leading-[1.02] text-fg md:text-7xl">
-          {HERO.headline}{" "}
           <span className="bg-gradient-cta bg-clip-text text-transparent">
-            Pega a Visão.
+            {HERO.headline}
           </span>
         </h1>
 
