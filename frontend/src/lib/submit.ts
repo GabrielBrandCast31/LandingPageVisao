@@ -64,6 +64,26 @@ export function newLeadId(): string {
 }
 
 /**
+ * Timestamp UTC no formato Python `datetime.utcnow().isoformat()` —
+ * sem o sufixo `Z`, com microssegundos (6 dígitos) padronizados.
+ * JS só tem precisão de milissegundos, então os 3 últimos dígitos
+ * sempre saem como zeros — formato visual fica idêntico ao backend.
+ */
+export function apiTimestamp(): string {
+  const d = new Date();
+  const pad = (n: number, w = 2) => String(n).padStart(w, "0");
+  return (
+    d.getUTCFullYear() +
+    "-" + pad(d.getUTCMonth() + 1) +
+    "-" + pad(d.getUTCDate()) +
+    "T" + pad(d.getUTCHours()) +
+    ":" + pad(d.getUTCMinutes()) +
+    ":" + pad(d.getUTCSeconds()) +
+    "." + pad(d.getUTCMilliseconds(), 3) + "000"
+  );
+}
+
+/**
  * Dispara o webhook do Apps Script.
  *
  * Usa `text/plain` implícito + `no-cors` para evitar preflight CORS

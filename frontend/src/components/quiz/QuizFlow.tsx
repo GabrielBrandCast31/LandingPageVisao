@@ -12,6 +12,7 @@ import { classify } from "@/lib/scoring";
 import { getProfile } from "@/lib/profiles";
 import { diagnosisPdfBase64 } from "@/lib/pdf";
 import {
+  apiTimestamp,
   BOOKING_URL,
   newLeadId,
   sendLeadWebhook,
@@ -65,7 +66,7 @@ export function QuizFlow() {
       const profileId = classify(answers);
       const profile = getProfile(profileId);
       const lead_id = newLeadId();
-      const generated_at = new Date().toISOString();
+      const generated_at = apiTimestamp();
 
       const pdfBase64 = await diagnosisPdfBase64({
         name: lead.name,

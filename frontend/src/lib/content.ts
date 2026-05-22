@@ -75,13 +75,15 @@ export const FOUNDERS = [
     bio: "Economista formado pela UFSJ, com passagem pelo mestrado em Economia Aplicada na UFJF e mais de 6 anos de experiência. Desenvolveu uma metodologia que integra economia comportamental à prática financeira.",
     initials: "FG",
     accent: "purple" as const,
+    photo: "/felipe.jpeg",
   },
   {
     name: "Sabrina Azevedo",
-    role: "Sócia fundadora · Produtora e empresária",
-    bio: "Produtora, artista e empresária no cenário cultural desde 2017. Atua no relacionamento com clientes e parceiros, fortalecendo as conexões da Visão com o público.",
+    role: "Sócia fundadora · Produtora cultural e empresária",
+    bio: "Produtora cultural e empresária, atuando na construção de conexões estratégicas entre marcas, clientes e parceiros. Na Visão, desenvolve o relacionamento institucional e fortalece a comunicação da empresa com o público, unindo criatividade, articulação e sensibilidade.",
     initials: "SA",
     accent: "sky" as const,
+    photo: "/sabrina.jpeg",
   },
 ];
 

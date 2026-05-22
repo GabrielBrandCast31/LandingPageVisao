@@ -1,19 +1,30 @@
 /**
  * Visão — Webhook Apps Script
- * ---------------------------------------------------------------
- *  Cole este código em: Planilha → Extensões → Apps Script
- *  Publique: Implementar → Nova implementação → Web app
- *    - Executar como: Eu (seu email)
- *    - Quem pode acessar: Qualquer pessoa (sem login)
- *    - Copie a URL gerada e cole em
- *      frontend/.env.local → NEXT_PUBLIC_LEAD_WEBHOOK_URL
+ * ===============================================================
+ *  COMO PUBLICAR (uma vez):
+ *  1. Na sua planilha, abra Extensões → Apps Script
+ *  2. Cole TUDO deste arquivo (substitua o que tiver lá)
+ *  3. Salve (Ctrl/Cmd + S)
+ *  4. Implementar → Nova implementação
+ *       Tipo:         Web app
+ *       Executar como: Eu (seu email)
+ *       Acesso:       Qualquer pessoa
+ *  5. Copie a URL gerada (termina em /exec) e cole em
+ *       frontend/.env.local → NEXT_PUBLIC_LEAD_WEBHOOK_URL
+ *  6. Reinicie o `npm run dev`
  *
- *  O script faz:
- *   1. appendRow na aba SHEET_NAME, no formato A→O fixo
- *   2. Envia e-mail (GmailApp) com PDF anexado
+ *  COMO TESTAR sem rodar o site:
+ *    → No editor do Apps Script, escolha a função `test_` no
+ *      dropdown e clique em ▶ Executar.
+ *    → Uma linha de teste aparece na planilha em segundos.
  *
- *  Formato das colunas (espelha a planilha de controle):
- *    A. Recebido em        (timestamp do Apps Script)
+ *  SE ATUALIZAR ESTE CÓDIGO depois:
+ *    → Implementar → "Gerenciar implementações" → ✏️ Editar →
+ *      Versão: "Nova versão" → Implementar.
+ *      (A URL não muda, mas o código sim.)
+ *
+ *  COLUNAS GRAVADAS (ordem A→O):
+ *    A. Recebido em        (timestamp local do Apps Script)
  *    B. Lead ID            (UUID gerado client-side)
  *    C. Criado em (API)    (ISO timestamp do frontend)
  *    D. Nome
@@ -28,17 +39,8 @@
  *    M. Origem
  *    N. LGPD
  *    O. Respostas do quiz  (JSON serializado)
- *
- *  CORS:
- *   O frontend faz fetch em `mode: 'no-cors'` com Content-Type implícito
- *   (`text/plain`), por isso lemos `e.postData.contents`. O Apps Script
- *   não retorna CORS headers — o frontend é fire-and-forget.
- * ---------------------------------------------------------------
+ * ===============================================================
  */
-
-const SHEET_NAME = "leads"; // troque pelo nome da aba que receberá os leads
-const FROM_NAME = "Visão";
-const REPLY_TO = "contato.visaobr@gmail.com";
 
 const HEADERS = [
   "Recebido em",
@@ -58,40 +60,60 @@ const HEADERS = [
   "Respostas do quiz",
 ];
 
+const FROM_NAME = "Visão";
+const REPLY_TO = "contato.visaobr@gmail.com";
+
+/* =============================== Entrypoints =============================== */
+
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
-    appendToSheet_(data);
+    const result = appendToSheet_(data);
     sendDiagnosisEmail_(data);
-    return ContentService.createTextOutput(
-      JSON.stringify({ ok: true })
-    ).setMimeType(ContentService.MimeType.JSON);
+    return jsonResponse_({
+      ok: true,
+      sheet: result.sheetName,
+      row: result.row,
+    });
   } catch (err) {
-    Logger.log("Erro: " + err);
-    return ContentService.createTextOutput(
-      JSON.stringify({ ok: false, error: String(err) })
-    ).setMimeType(ContentService.MimeType.JSON);
+    Logger.log("Erro no doPost: " + err);
+    return jsonResponse_({ ok: false, error: String(err) });
   }
 }
 
 function doGet() {
-  return ContentService.createTextOutput(
-    JSON.stringify({ ok: true, service: "Visão webhook" })
-  ).setMimeType(ContentService.MimeType.JSON);
+  return jsonResponse_({ ok: true, service: "Visão webhook" });
 }
 
-/* ----------------------------- helpers ----------------------------- */
+/* ============================== Sheet logic ================================ */
 
-function appendToSheet_(data) {
+/**
+ * Encontra a aba certa pela presença dos cabeçalhos esperados em A1/B1.
+ * Se não achar, usa a primeira aba — e, caso ela esteja vazia, escreve
+ * os headers automaticamente. Assim funciona em planilhas novas e nas que
+ * você já tem com a estrutura criada.
+ */
+function getTargetSheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet) sheet = ss.insertSheet(SHEET_NAME);
+  const sheets = ss.getSheets();
 
-  // Cria o cabeçalho na primeira execução (se a aba estiver vazia)
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(HEADERS);
+  for (const s of sheets) {
+    if (s.getLastColumn() < 2) continue;
+    const row1 = s.getRange(1, 1, 1, 2).getValues()[0];
+    if (row1[0] === HEADERS[0] && row1[1] === HEADERS[1]) {
+      return s;
+    }
   }
 
+  const first = sheets[0];
+  if (first.getLastRow() === 0) {
+    first.appendRow(HEADERS);
+  }
+  return first;
+}
+
+function appendToSheet_(data) {
+  const sheet = getTargetSheet_();
   const lead = data.lead || {};
   const profile = data.profile || {};
 
@@ -112,7 +134,11 @@ function appendToSheet_(data) {
     lead.lgpd_consent ? "sim" : "não",                // N · LGPD
     JSON.stringify(data.answers || {}),               // O · Respostas do quiz
   ]);
+
+  return { sheetName: sheet.getName(), row: sheet.getLastRow() };
 }
+
+/* ============================== Email logic ================================ */
 
 function sendDiagnosisEmail_(data) {
   const lead = data.lead || {};
@@ -126,7 +152,6 @@ function sendDiagnosisEmail_(data) {
     "application/pdf",
     data.pdf_filename || "diagnostico-visao.pdf"
   );
-
   const html = buildEmailHtml_(firstName, profile, data.booking_url);
 
   GmailApp.sendEmail(lead.email, subject, "Seu diagnóstico está em anexo.", {
@@ -163,4 +188,44 @@ function buildEmailHtml_(firstName, profile, bookingUrl) {
     '<div style="font-size:18px;color:#C0F685;">Pega a Visão!</div>Clareza para decidir. Estrutura para crescer.' +
     '</td></tr></table></td></tr></table></body></html>'
   );
+}
+
+/* =============================== Utilities ================================= */
+
+function jsonResponse_(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * Função de teste — rode manualmente do editor (▶ Executar com `test_`)
+ * para verificar se a integração com a planilha está funcionando.
+ * Adiciona uma linha mockada e NÃO envia e-mail (pdf_base64 vazio).
+ */
+function test_() {
+  const payload = {
+    lead_id: Utilities.getUuid(),
+    generated_at: new Date().toISOString(),
+    lead: {
+      name: "Teste Manual",
+      email: "teste@example.com",
+      phone: "21999999999",
+      age: 30,
+      gender: "feminino",
+      city: "Rio de Janeiro",
+      source: "apps-script-test",
+      lgpd_consent: true,
+    },
+    profile: {
+      id: "consumidor_calorico",
+      name: "Consumidor Calórico",
+      recommended_service: "Consultoria Básica",
+      accent_color: "#8350F2",
+      summary: "Teste",
+      diagnosis: "Teste",
+    },
+    answers: { "1": "1a", "2": "2a", "3": "3a", "4": "4b" },
+  };
+  const result = appendToSheet_(payload);
+  Logger.log("✅ Linha de teste gravada na aba '%s', linha %s", result.sheetName, result.row);
 }
