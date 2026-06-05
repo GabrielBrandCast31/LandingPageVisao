@@ -30,7 +30,7 @@ export const PROFILES: Record<ProfileId, Profile> = {
     name: "Consumidor Calórico",
     summary: "O dinheiro vai embora nos pequenos excessos do cotidiano.",
     diagnosis:
-      "Sua rotina e os pequenos gastos do dia a dia podem estar consumindo seu dinheiro sem que você perceba. Mais do que falta de controle, esse perfil mostra **falta de visão** sobre hábitos financeiros e prioridades",
+      "Sua rotina e os pequenos gastos do dia a dia podem estar consumindo seu dinheiro sem que você perceba.\n\nMais do que falta de controle, esse perfil mostra **falta de visão** sobre hábitos financeiros e prioridades.",
     recommended_service: "Consultoria Básica",
     signals: [
       "Vida corrida e renda variável dificultam manter um método.",
@@ -59,7 +59,7 @@ export const PROFILES: Record<ProfileId, Profile> = {
     summary:
       "Tenta equilibrar trabalho, vida pessoal e dinheiro, mas sente que está sempre apagando incêndios.",
     diagnosis:
-      "Você tenta equilibrar trabalho, vida pessoal e estabilidade financeira ao mesmo tempo. Esse perfil normalmente aparece quando existe **excesso de responsabilidades** e pouca estrutura para sustentar tudo sozinho(a).",
+      "Você tenta equilibrar trabalho, vida pessoal e estabilidade financeira ao mesmo tempo.\n\nEsse perfil normalmente aparece quando existe **excesso de responsabilidades** e pouca estrutura para sustentar tudo sozinho(a).",
     recommended_service: "Mentoria Financeira",
     signals: [
       "Você toma boas decisões pontuais, mas falta planejamento.",
@@ -88,7 +88,7 @@ export const PROFILES: Record<ProfileId, Profile> = {
     summary:
       "Foca tanto em fazer o negócio funcionar que a parte burocrática entra no 'modo avião'.",
     diagnosis:
-      "Você provavelmente dedica toda sua energia ao negócio e acaba deixando **organização financeira e burocracias** para depois. Esse perfil é comum em rotinas multitarefa e empreendimentos em crescimento.",
+      "Você provavelmente dedica toda sua energia ao negócio e acaba deixando **organização financeira e burocracias** para depois.\n\nEsse perfil é comum em rotinas multitarefa e empreendimentos em crescimento.",
     recommended_service: "Serviços Contábeis + Consultoria",
     signals: [
       "MEI, NF e DAS viraram dor de cabeça recorrente.",
@@ -117,7 +117,7 @@ export const PROFILES: Record<ProfileId, Profile> = {
     summary:
       "Consome conteúdo financeiro o tempo todo, mas ainda não conseguiu transformar informação em estratégia.",
     diagnosis:
-      "Você já busca aprender sobre dinheiro e investimentos, mas ainda sente dificuldade em **transformar informação em direção prática**. Esse perfil costuma surgir no excesso de conteúdo e comparação digital.",
+      "Você já busca aprender sobre dinheiro e investimentos, mas ainda sente dificuldade em **transformar informação em direção prática**.\n\nEsse perfil costuma surgir no excesso de conteúdo e comparação digital.",
     recommended_service: "Mentoria Financeira",
     signals: [
       "Você já tem base, mas falta um plano consistente.",
