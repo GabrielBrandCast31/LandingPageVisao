@@ -117,29 +117,30 @@ export const DIFFERENTIALS = {
   comparison: [
     {
       label: "Você é tratado como pessoa, não como número",
-      visao: true,
-      others: false,
+      visao: "Sempre.",
+      others: "Raramente.",
     },
     {
-      label: "Linguagem do dia a dia, sem economês",
-      visao: true,
-      others: false,
+      label: "Consultor humano em todas as interações",
+      visao: "Sempre.",
+      others: "Na maioria, é robô.",
     },
-    { label: "Consultor humano em todas as interações", visao: true, others: false },
     {
       label: "Finanças pessoais + contabilidade integradas",
-      visao: true,
-      others: false,
+      visao: "Única no mercado.",
+      others: "Não há.",
     },
-    { label: "Atendimento 100% online em todo o Brasil", visao: true, others: true },
-    { label: "Aplicativos genéricos e dashboards prontos", visao: false, others: true },
+    {
+      label:
+        "Linguagem acessível e didática. Você ciente de cada etapa do processo.",
+      visao: "Sempre.",
+      others: "Quase nunca.",
+    },
   ],
-  impact: [
-    "A Visão não fala só de dinheiro. A gente fala da vida real que acontece em volta dele.",
-    "Aqui você transforma confusão em clareza. Menos confusão. Mais Visão.",
-    "Você não precisa virar outra pessoa pra organizar sua vida financeira.",
-    "Sem julgamento. Sem pressão. Sem linguagem complicada.",
-  ],
+  summary:
+    "Em resumo, a Visão não fala só de dinheiro. A gente fala da vida real que acontece em volta dele. Sem julgamento, sem pressão, sem linguagem complicada. Por isso, acreditamos que você não precisa virar outra pessoa pra organizar sua vida financeira — porque com Visão, você transforma confusão em clareza.",
+  highlight: "Menos Confusão. Mais Visão.",
+  ctaLabel: "Comece pelo diagnóstico!",
 };
 
 export const CASHBACK = {
